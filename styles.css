@@ -1,0 +1,46 @@
+#calculator {
+    margin: 0 auto;
+    width: 30vw;
+    background-color: gray;
+    height: min-content;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+#display {
+    height: 40px;
+    text-align: right;
+    font-size: 32px;
+    background-color: white;
+    padding: 10px;
+}
+
+.eraseRow {
+    display: flex;
+    flex-direction: row;
+    padding: 4px 0;
+}
+
+.eraseRow > button {
+    width: 100%;
+    height: 40px;
+}
+
+.numericInputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25em;
+    height: 300px;
+    justify-content: space-around;
+}
+
+.numeric {
+    width: 23%;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: darkgray;
+}

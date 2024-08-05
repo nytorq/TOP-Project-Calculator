@@ -23,21 +23,25 @@ const calculator = (function() {
         // let result = eval(expression);
         // return result;
         switch (screenController.memory[1]) {
-            case '+':
-            result = parseFloat(screenController.memory[0]) + parseFloat(screenController.memory[2]);
-            updateRest();
-            break;
-            case '-' : result = parseFloat(screenController.memory[0]) - parseFloat(screenController.memory[2]);
-            updateRest();
-            break;
-            case 'x' : result = parseFloat(screenController.memory[0]) * parseFloat(screenController.memory[2]);
-            updateRest();
-            break;
-            case '÷' : result = parseFloat(screenController.memory[0]) / parseFloat(screenController.memory[2]);
-            updateRest();
-            break;
+            case '+': 
+                result = parseFloat(screenController.memory[0]) + parseFloat(screenController.memory[2])
+                updateRest()
+                break
+            case '-' : 
+                result = parseFloat(screenController.memory[0]) - parseFloat(screenController.memory[2])
+                updateRest()
+                break
+            case 'x' : 
+                result = parseFloat(screenController.memory[0]) * parseFloat(screenController.memory[2])
+                updateRest()
+                break
+            case '÷' : 
+                result = parseFloat(screenController.memory[0]) / parseFloat(screenController.memory[2])
+                updateRest()
+                break
             default:
                 console.log('error');
+                break
         }
     }
     calculateButton.addEventListener('click', calculate);

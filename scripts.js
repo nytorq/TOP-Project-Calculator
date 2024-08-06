@@ -1,159 +1,154 @@
 const calculator = (function() {
-    // console.log(${screenController.operand1} + ${screenController.operator} ${screenController.operand2})
+    let memory = {
+        operand1: '',
+        operator: '',
+        operand2: '',
+        activeOperand: 1
+    };
 
-    const calculateButton = document.querySelector('#button-equals');
-    // let numberArray = [];
-    // const operandConverter = function() {
-    //     numberArray[0] = Number(screenController.memory[0]);
-    //     numberArray[1] = screenController.memory[1];
-    //     numberArray[2] = Number(screenController.memory[2]);
-    // }
-    let result;
-
-    const updateRest = function () {
-        screenController.memory[0] = result;
-        screenController.memory[1] = '';
-        screenController.memory[2] = '';
-        screenController.updateDisplay();
+    const operandSwitcher = function() {
+        memory.activeOperand === 1 ? memory.activeOperand = 2 : memory.activeOperand = 1;
     }
 
-    const calculate = function () {
-        // operandConverter();
-        // let expression = numberArray.join('');
-        // let result = eval(expression);
-        // return result;
-        switch (screenController.memory[1]) {
-            case '+': 
-                result = parseFloat(screenController.memory[0]) + parseFloat(screenController.memory[2])
-                updateRest()
+    const inputTriage = function() {
+        switch (screenController.currentInput.type) {
+            case 'operator':
+                if (memory.operand1 === null) {
+                    console.log('%cThere is no first operand. You must insert a number first.', 'color: red;')
+                } else {
+                    memory.operator = screenController.currentInput.character;
+                    operandSwitcher();
+                }
                 break
-            case '-' : 
-                result = parseFloat(screenController.memory[0]) - parseFloat(screenController.memory[2])
-                updateRest()
+            case 'number':
+                if (memory.activeOperand === 1) {
+                    memory.operand1 = memory.operand1 + screenController.currentInput.character;
+                } else if (memory.activeOperand === 2) {
+                    memory.operand2 = memory.operand2 + screenController.currentInput.character;
+                }
                 break
-            case 'x' : 
-                result = parseFloat(screenController.memory[0]) * parseFloat(screenController.memory[2])
-                updateRest()
+            case 'decimal':
+                let strOperand1 = memory.operand1.toString();
+                let strOperand2 = memory.operand2.toString();
+                if (memory.activeOperand === 1 && !strOperand1.includes('.')) {
+                    memory.operand1 = memory.operand1 + screenController.currentInput.character;
+                } else if (memory.activeOperand === 2 && !strOperand2.includes('.')) {
+                    memory.operand2 = memory.operand2 + screenController.currentInput.character;
+                }
                 break
-            case '÷' : 
-                result = parseFloat(screenController.memory[0]) / parseFloat(screenController.memory[2])
-                updateRest()
-                break
+            case 'calculate':
+                operate();
+        }
+        // console.log(`The currentInput is: ${screenController.currentInput.character} and your formula now reads as:`);
+        screenController.updateDisplay();
+        console.log(`%c${memory.operand1} ${memory.operator} ${memory.operand2}`, 'color: blue; font-size: 24px;');
+    }
+
+    const clearMemory = function() {
+        memory.operand1 = '';
+        memory.operator = '';
+        memory.operand2 = '';
+        memory.activeOperand = 1;
+        screenController.updateDisplay();
+        console.log(`%cMemory has been cleared.`, 'color: orange;')
+    }
+
+    const deleteLast = function() {
+        let strOperand1 = memory.operand1.toString();
+        let strOperand2 = memory.operand2.toString();
+        if (screenController.currentInput.type === 'operator') {
+            memory.operator = '';
+        } else if (memory.activeOperand === 1) {
+            memory.operand1 = parseFloat(strOperand1.slice(0,-1),10);
+        } else if (memory.activeOperand === 2) {
+            memory.operand2 = parseFloat(strOperand2.slice(0,-1), 10);
+        }
+        screenController.updateDisplay();
+        console.log(`%c${memory.operand1} ${memory.operator} ${memory.operand2}`, 'color: blue; font-size: 24px;');
+    }
+
+    const normalizeOperator = function(op) {
+        // console.log(`The original character code is ` + op.charCodeAt(0))
+        switch (op) {
+            case '−': // Unicode minus sign
+            case '−': // HTML entity &minus; (might be represented as Unicode)
+                return '-';
+            case '+': // Plus sign or HTML entity &plus;
+                return '+';
             default:
-                console.log('error');
-                break
+                return op;
         }
     }
-    calculateButton.addEventListener('click', calculate);
 
-    
-    return {calculate, result}
+    const operate = function() {
+
+        let normedOperator = normalizeOperator(memory.operator);
+        let result;
+        // console.log(`The normed character code is ` + normedOperator.charCodeAt(0));
+
+        if (memory.operand2 === '0') {
+            console.log('%c The earth shook and became ever so slightly off-kilter...', 'color:purple;')
+        } else {
+            switch (normedOperator) {
+                case '+': 
+                    result = parseFloat(memory.operand1) + parseFloat(memory.operand2);
+                    break
+                case '-' : 
+                    result = parseFloat(memory.operand1) - parseFloat(memory.operand2);
+                    break
+                case '×' : 
+                    result = parseFloat(memory.operand1) * parseFloat(memory.operand2);
+                    break
+                case '÷' : 
+                    result = parseFloat(memory.operand1) / parseFloat(memory.operand2);
+                    break
+                default:
+                    console.log('%cError: no operator present in calculation.', 'color: red;');
+                    return null
+            }
+            clearMemory();
+            memory.operand1 = result;
+        }        
+    }
+        
+    return {memory, inputTriage, clearMemory, deleteLast}
 })();
 
-/* Logic on constructing operands:
-
-Evaluating as if we were gonna have 3 arguments in an array, i.e operand1, an operator, and operand2.
-- If number and first entry, store into operand.
-- If operator and first entry, enter 0 as first operand and character as operator.
-- if number and 2+ entry, join into operand
-- If operator and 2+ entry, enter character as operator
-- If number and operator exists,  
-
-Evaluating as one string
-- If !operator && operatand1.contains(!.) {operand1 = this.innerText}
-- If !operator && operatand1.contains(!.) {operand1 = this.innerText}
-- If operator { operand2 = this.innerText}
-
-Operand eval
-if (this.innerText = '.' operand.contains('.') { do something/.alert} else if ()
-*/
-
 const screenController = (function() {
-    let memory = [];
-    let operand1 = '';
-    let operator = '';
-    let operand2 = '';
-    let input = {
+    // VARIABLES
+    let currentInput = {
         character: '',
         type: '',
-        string: ''
+    }
+    
+    // BUTTONS
+    const clearButton = document.querySelector('#button-clear');
+    clearButton.addEventListener('click', calculator.clearMemory);
+
+
+    const backspaceButton = document.querySelector('#button-delete');
+    backspaceButton.addEventListener('click', calculator.deleteLast);
+
+
+    const calculatorKeys = document.getElementsByClassName('keypad');
+    const registerClick = function() {
+        currentInput.character = this.innerText;
+        currentInput.type = this.classList[1];
+        calculator.inputTriage();
+    }
+    for (i = 0 ; i < calculatorKeys.length ; i++) {
+        let button = calculatorKeys[i];
+        button.addEventListener('click', registerClick);
     }
 
     const calculatorDisplay = document.querySelector('#display');
 
-    const insertIntoMemory = function() {
-        memory[0] = operand1;
-        memory[1] = operator;
-        memory[2] = operand2;
-        updateDisplay();
-    }
-
     const updateDisplay = function() {
-        let displayCharacters = memory.join('');
+        let displayCharacters = calculator.memory.operand1 + calculator.memory.operator + calculator.memory.operand2;
         calculatorDisplay.innerText = displayCharacters;
-        console.log(input)
-        console.log(memory)
     }
 
-    const clearMemory = function() {
-        memory.length = 0;
-        operand1 = '';
-        operator = '';
-        operand2 = '';
-        input.string = '';
-        updateDisplay();
-    }
-
-    const deleteLast = function() {
-        operator.length === 0 ? operand1 = operand1.slice(0,-1) : operand2 = operand2.slice(0, -1);
-        insertIntoMemory();
-    }
-
-    const operandSwitcher = function() {
-        input.string = input.string + input.character;
-        operator.length === 0 ? operand1 = operand1 + input.character : operand2 = operand2 + input.character;
-    }
-
-    const storeInput = function() {
-        if (input.type === 'operator') {
-            operator = input.character;
-        } else if (input.type === 'decimal') {
-            !input.string.includes('.') ? operandSwitcher() : console.log('Only one decimal at a time.')
-        } else if (input.type === 'operand') {
-            operandSwitcher();
-        } else if (input.type === 'calculate') {
-            calculator.calculate();
-        }
-        insertIntoMemory();
-    }
-
-    const registerClick = function() {
-        input.character = this.innerText;
-        if (this.classList.contains('operator')) {
-            input.type = 'operator';
-        } else if (this.classList.contains('decimal')) {
-            input.type = 'decimal';
-        } else if (this.classList.contains('number')) {
-            input.type = 'operand';
-        } else if (this.classList.contains('calculate')) {
-            input.type = 'calculate';
-        }
-        storeInput();
-    }
-
-    const numericKeys = document.getElementsByClassName('keypad');
-    for (i = 0 ; i < numericKeys.length ; i++) {
-        let button = numericKeys[i];
-        button.addEventListener('click', registerClick);
-    }
-    
-    const clearButton = document.querySelector('#button-clear');
-    clearButton.addEventListener('click', clearMemory);
-
-    const deleteButton = document.querySelector('#button-delete');
-    deleteButton.addEventListener('click', deleteLast);
-
-    return {memory, operand1, operand2, operator, input, updateDisplay}
+    return {currentInput, updateDisplay}
 
 
 })();
